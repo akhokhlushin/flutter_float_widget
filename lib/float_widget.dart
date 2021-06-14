@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 class FloatWidget extends StatefulWidget {
   final Widget child;
   final Widget floatChild;
-  final FloatWidgetPostion postion;
-  FloatWidget(
-      {Key key,
-      this.postion = FloatWidgetPostion.bottomRight,
-      @required this.child,
-      @required this.floatChild})
+  final FloatWidgetPostion position;
+  final double attachToSide;
+
+  FloatWidget({Key key,
+    this.position = FloatWidgetPostion.bottomRight,
+    @required this.child,
+    @required this.floatChild, this.attachToSide})
       : assert(child != null),
         assert(floatChild != null),
         super(key: key);
@@ -19,7 +20,7 @@ class FloatWidget extends StatefulWidget {
 
 class _FloatWidgetState extends State<FloatWidget> {
   GlobalKey<_FloatViewState> _floatViewStateGlobalKey =
-      GlobalKey<_FloatViewState>();
+  GlobalKey<_FloatViewState>();
   GlobalKey _childKey = GlobalKey();
 
   @override
@@ -37,9 +38,10 @@ class _FloatWidgetState extends State<FloatWidget> {
       children: [
         Container(key: _childKey, child: widget.child),
         _FloatView(
-          postion: widget.postion,
+          position: widget.position,
           key: _floatViewStateGlobalKey,
           child: widget.floatChild,
+          attachToSide: widget.attachToSide,
         )
       ],
     );
@@ -48,8 +50,11 @@ class _FloatWidgetState extends State<FloatWidget> {
 
 class _FloatView extends StatefulWidget {
   final Widget child;
-  final FloatWidgetPostion postion;
-  _FloatView({Key key, @required this.child, this.postion})
+  final FloatWidgetPostion position;
+  final double attachToSide;
+
+  _FloatView(
+      {Key key, @required this.child, this.position, this.attachToSide})
       : assert(child != null),
         super(key: key);
 
@@ -72,7 +77,7 @@ class _FloatViewState extends State<_FloatView> {
   void setMaxSize(Size size) {
     maxSize = size;
 
-    switch (widget.postion) {
+    switch (widget.position) {
       case FloatWidgetPostion.topLeft:
         left = 0;
         top = 0;
@@ -121,12 +126,13 @@ class _FloatViewState extends State<_FloatView> {
   }
 
   void _onPanEnd() {
-    duration = Duration(milliseconds: 100);
+    if (widget.attachToSide==null) return;
+      duration = Duration(milliseconds: 100);
     if (left + _containerKey.currentContext.size.width / 2 >=
         maxSize.width / 2) {
-      left = maxSize.width - _containerKey.currentContext.size.width;
+      left = maxSize.width - _containerKey.currentContext.size.width-widget.attachToSide;
     } else {
-      left = 0;
+      left = widget.attachToSide;
     }
     setState(() {});
   }
